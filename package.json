@@ -10,14 +10,13 @@
     "build": "parcel build --experimental-scope-hoisting --public-url . index.html"
   },
   "repository": {
-      "type": "git",
-      "url": "git+https://github.com/mbenzekri/frcommunes.git"
+    "type": "git",
+    "url": "git+https://github.com/mbenzekri/frcommunes.git"
   },
   "bugs": {
-      "url": "https://github.com/mbenzekri/frcommunes/issues"
+    "url": "https://github.com/mbenzekri/frcommunes/issues"
   },
   "homepage": "https://github.com/mbenzekri/frcommunes.git#readme",
-
   "dependencies": {
     "ol": "6.2.1"
   },
