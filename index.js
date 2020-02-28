@@ -34,7 +34,7 @@ var map = new Map({
         new TileLayer({
             source: new OSM()
         }),
-        imagelayer, /// when replaced by tilelayer see line 15 it works !  
+        tilelayer, // when replaced by  tilelayer line 15 it's ok when replaced by imagelayer from line 28 it fails  
         new TileLayer({
             source: new TileDebug()
         }),

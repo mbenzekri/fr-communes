@@ -62481,7 +62481,7 @@ var imagelayer = new _Tile.default({
 var map = new _Map.default({
   layers: [new _Tile.default({
     source: new _source.OSM()
-  }), imagelayer, /// when replaced by tilelayer see line 15 it works !  
+  }), tilelayer, // when replaced by  tilelayer line 15 it's ok when replaced by imagelayer from line 28 it fails  
   new _Tile.default({
     source: new _source.TileDebug()
   })],
