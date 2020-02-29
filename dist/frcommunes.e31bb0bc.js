@@ -48416,7 +48416,427 @@ function (_super) {
 
 var _default = TileLayer;
 exports.default = _default;
-},{"./BaseTile.js":"node_modules/ol/layer/BaseTile.js","../renderer/canvas/TileLayer.js":"node_modules/ol/renderer/canvas/TileLayer.js"}],"node_modules/ol/tilecoord.js":[function(require,module,exports) {
+},{"./BaseTile.js":"node_modules/ol/layer/BaseTile.js","../renderer/canvas/TileLayer.js":"node_modules/ol/renderer/canvas/TileLayer.js"}],"node_modules/ol/layer/BaseImage.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _Layer = _interopRequireDefault(require("./Layer.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var __extends = void 0 && (void 0).__extends || function () {
+  var extendStatics = function (d, b) {
+    extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    };
+
+    return extendStatics(d, b);
+  };
+
+  return function (d, b) {
+    extendStatics(d, b);
+
+    function __() {
+      this.constructor = d;
+    }
+
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
+/**
+ * @module ol/layer/BaseImage
+ */
+
+
+/**
+ * @typedef {Object} Options
+ * @property {string} [className='ol-layer'] A CSS class name to set to the layer element.
+ * @property {number} [opacity=1] Opacity (0, 1).
+ * @property {boolean} [visible=true] Visibility.
+ * @property {import("../extent.js").Extent} [extent] The bounding extent for layer rendering.  The layer will not be
+ * rendered outside of this extent.
+ * @property {number} [zIndex] The z-index for layer rendering.  At rendering time, the layers
+ * will be ordered, first by Z-index and then by position. When `undefined`, a `zIndex` of 0 is assumed
+ * for layers that are added to the map's `layers` collection, or `Infinity` when the layer's `setMap()`
+ * method was used.
+ * @property {number} [minResolution] The minimum resolution (inclusive) at which this layer will be
+ * visible.
+ * @property {number} [maxResolution] The maximum resolution (exclusive) below which this layer will
+ * be visible.
+ * @property {import("../PluggableMap.js").default} [map] Sets the layer as overlay on a map. The map will not manage
+ * this layer in its layers collection, and the layer will be rendered on top. This is useful for
+ * temporary layers. The standard way to add a layer to a map and have it managed by the map is to
+ * use {@link module:ol/Map#addLayer}.
+ * @property {import("../source/Image.js").default} [source] Source for this layer.
+ */
+
+/**
+ * @classdesc
+ * Server-rendered images that are available for arbitrary extents and
+ * resolutions.
+ * Note that any property set in the options is set as a {@link module:ol/Object~BaseObject}
+ * property on the layer object; for example, setting `title: 'My Title'` in the
+ * options means that `title` is observable, and has get/set accessors.
+ *
+ * @extends {Layer<import("../source/Image.js").default>}
+ * @api
+ */
+var BaseImageLayer =
+/** @class */
+function (_super) {
+  __extends(BaseImageLayer, _super);
+  /**
+   * @param {Options=} opt_options Layer options.
+   */
+
+
+  function BaseImageLayer(opt_options) {
+    var _this = this;
+
+    var options = opt_options ? opt_options : {};
+    _this = _super.call(this, options) || this;
+    return _this;
+  }
+
+  return BaseImageLayer;
+}(_Layer.default);
+
+var _default = BaseImageLayer;
+exports.default = _default;
+},{"./Layer.js":"node_modules/ol/layer/Layer.js"}],"node_modules/ol/reproj/common.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ENABLE_RASTER_REPROJECTION = exports.ERROR_THRESHOLD = void 0;
+
+/**
+ * @module ol/reproj/common
+ */
+
+/**
+ * Default maximum allowed threshold  (in pixels) for reprojection
+ * triangulation.
+ * @type {number}
+ */
+var ERROR_THRESHOLD = 0.5;
+/**
+ * Enable automatic reprojection of raster sources. Default is `true`.
+ * TODO: decide if we want to expose this as a build flag or remove it
+ * @type {boolean}
+ */
+
+exports.ERROR_THRESHOLD = ERROR_THRESHOLD;
+var ENABLE_RASTER_REPROJECTION = true;
+exports.ENABLE_RASTER_REPROJECTION = ENABLE_RASTER_REPROJECTION;
+},{}],"node_modules/ol/renderer/canvas/ImageLayer.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _common = require("../../reproj/common.js");
+
+var _ViewHint = _interopRequireDefault(require("../../ViewHint.js"));
+
+var _extent = require("../../extent.js");
+
+var _proj = require("../../proj.js");
+
+var _Layer = _interopRequireDefault(require("./Layer.js"));
+
+var _transform = require("../../transform.js");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var __extends = void 0 && (void 0).__extends || function () {
+  var extendStatics = function (d, b) {
+    extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    };
+
+    return extendStatics(d, b);
+  };
+
+  return function (d, b) {
+    extendStatics(d, b);
+
+    function __() {
+      this.constructor = d;
+    }
+
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
+/**
+ * @module ol/renderer/canvas/ImageLayer
+ */
+
+
+/**
+ * @classdesc
+ * Canvas renderer for image layers.
+ * @api
+ */
+var CanvasImageLayerRenderer =
+/** @class */
+function (_super) {
+  __extends(CanvasImageLayerRenderer, _super);
+  /**
+   * @param {import("../../layer/Image.js").default} imageLayer Image layer.
+   */
+
+
+  function CanvasImageLayerRenderer(imageLayer) {
+    var _this = _super.call(this, imageLayer) || this;
+    /**
+     * @protected
+     * @type {?import("../../ImageBase.js").default}
+     */
+
+
+    _this.image_ = null;
+    return _this;
+  }
+  /**
+   * @inheritDoc
+   */
+
+
+  CanvasImageLayerRenderer.prototype.getImage = function () {
+    return !this.image_ ? null : this.image_.getImage();
+  };
+  /**
+   * @inheritDoc
+   */
+
+
+  CanvasImageLayerRenderer.prototype.prepareFrame = function (frameState) {
+    var layerState = frameState.layerStatesArray[frameState.layerIndex];
+    var pixelRatio = frameState.pixelRatio;
+    var viewState = frameState.viewState;
+    var viewResolution = viewState.resolution;
+    var imageSource = this.getLayer().getSource();
+    var hints = frameState.viewHints;
+    var renderedExtent = frameState.extent;
+
+    if (layerState.extent !== undefined) {
+      renderedExtent = (0, _extent.getIntersection)(renderedExtent, (0, _proj.fromUserExtent)(layerState.extent, viewState.projection));
+    }
+
+    if (!hints[_ViewHint.default.ANIMATING] && !hints[_ViewHint.default.INTERACTING] && !(0, _extent.isEmpty)(renderedExtent)) {
+      var projection = viewState.projection;
+
+      if (!_common.ENABLE_RASTER_REPROJECTION) {
+        var sourceProjection = imageSource.getProjection();
+
+        if (sourceProjection) {
+          projection = sourceProjection;
+        }
+      }
+
+      var image = imageSource.getImage(renderedExtent, viewResolution, pixelRatio, projection);
+
+      if (image && this.loadImage(image)) {
+        this.image_ = image;
+      }
+    }
+
+    return !!this.image_;
+  };
+  /**
+   * @inheritDoc
+   */
+
+
+  CanvasImageLayerRenderer.prototype.renderFrame = function (frameState, target) {
+    var image = this.image_;
+    var imageExtent = image.getExtent();
+    var imageResolution = image.getResolution();
+    var imagePixelRatio = image.getPixelRatio();
+    var layerState = frameState.layerStatesArray[frameState.layerIndex];
+    var pixelRatio = frameState.pixelRatio;
+    var viewState = frameState.viewState;
+    var viewCenter = viewState.center;
+    var viewResolution = viewState.resolution;
+    var size = frameState.size;
+    var scale = pixelRatio * imageResolution / (viewResolution * imagePixelRatio);
+    var width = Math.round(size[0] * pixelRatio);
+    var height = Math.round(size[1] * pixelRatio);
+    var rotation = viewState.rotation;
+
+    if (rotation) {
+      var size_1 = Math.round(Math.sqrt(width * width + height * height));
+      width = size_1;
+      height = size_1;
+    } // set forward and inverse pixel transforms
+
+
+    (0, _transform.compose)(this.pixelTransform, frameState.size[0] / 2, frameState.size[1] / 2, 1 / pixelRatio, 1 / pixelRatio, rotation, -width / 2, -height / 2);
+    (0, _transform.makeInverse)(this.inversePixelTransform, this.pixelTransform);
+    var canvasTransform = this.createTransformString(this.pixelTransform);
+    this.useContainer(target, canvasTransform, layerState.opacity);
+    var context = this.context;
+    var canvas = context.canvas;
+
+    if (canvas.width != width || canvas.height != height) {
+      canvas.width = width;
+      canvas.height = height;
+    } else if (!this.containerReused) {
+      context.clearRect(0, 0, width, height);
+    } // clipped rendering if layer extent is set
+
+
+    var clipped = false;
+
+    if (layerState.extent) {
+      var layerExtent = (0, _proj.fromUserExtent)(layerState.extent, viewState.projection);
+      clipped = !(0, _extent.containsExtent)(layerExtent, frameState.extent) && (0, _extent.intersects)(layerExtent, frameState.extent);
+
+      if (clipped) {
+        this.clipUnrotated(context, frameState, layerExtent);
+      }
+    }
+
+    var img = image.getImage();
+    var transform = (0, _transform.compose)(this.tempTransform_, width / 2, height / 2, scale, scale, 0, imagePixelRatio * (imageExtent[0] - viewCenter[0]) / imageResolution, imagePixelRatio * (viewCenter[1] - imageExtent[3]) / imageResolution);
+    this.renderedResolution = imageResolution * pixelRatio / imagePixelRatio;
+    var dx = transform[4];
+    var dy = transform[5];
+    var dw = img.width * transform[0];
+    var dh = img.height * transform[3];
+    this.preRender(context, frameState);
+
+    if (dw >= 0.5 && dh >= 0.5) {
+      var opacity = layerState.opacity;
+      var previousAlpha = void 0;
+
+      if (opacity !== 1) {
+        previousAlpha = this.context.globalAlpha;
+        this.context.globalAlpha = opacity;
+      }
+
+      this.context.drawImage(img, 0, 0, +img.width, +img.height, Math.round(dx), Math.round(dy), Math.round(dw), Math.round(dh));
+
+      if (opacity !== 1) {
+        this.context.globalAlpha = previousAlpha;
+      }
+    }
+
+    this.postRender(context, frameState);
+
+    if (clipped) {
+      context.restore();
+    }
+
+    if (canvasTransform !== canvas.style.transform) {
+      canvas.style.transform = canvasTransform;
+    }
+
+    return this.container;
+  };
+
+  return CanvasImageLayerRenderer;
+}(_Layer.default);
+
+var _default = CanvasImageLayerRenderer;
+exports.default = _default;
+},{"../../reproj/common.js":"node_modules/ol/reproj/common.js","../../ViewHint.js":"node_modules/ol/ViewHint.js","../../extent.js":"node_modules/ol/extent.js","../../proj.js":"node_modules/ol/proj.js","./Layer.js":"node_modules/ol/renderer/canvas/Layer.js","../../transform.js":"node_modules/ol/transform.js"}],"node_modules/ol/layer/Image.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _BaseImage = _interopRequireDefault(require("./BaseImage.js"));
+
+var _ImageLayer = _interopRequireDefault(require("../renderer/canvas/ImageLayer.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var __extends = void 0 && (void 0).__extends || function () {
+  var extendStatics = function (d, b) {
+    extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    };
+
+    return extendStatics(d, b);
+  };
+
+  return function (d, b) {
+    extendStatics(d, b);
+
+    function __() {
+      this.constructor = d;
+    }
+
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
+/**
+ * @module ol/layer/Image
+ */
+
+
+/**
+ * @classdesc
+ * Server-rendered images that are available for arbitrary extents and
+ * resolutions.
+ * Note that any property set in the options is set as a {@link module:ol/Object~BaseObject}
+ * property on the layer object; for example, setting `title: 'My Title'` in the
+ * options means that `title` is observable, and has get/set accessors.
+ *
+ * @api
+ */
+var ImageLayer =
+/** @class */
+function (_super) {
+  __extends(ImageLayer, _super);
+  /**
+   * @param {import("./BaseImage.js").Options=} opt_options Layer options.
+   */
+
+
+  function ImageLayer(opt_options) {
+    return _super.call(this, opt_options) || this;
+  }
+  /**
+   * Create a renderer for this layer.
+   * @return {import("../renderer/Layer.js").default} A layer renderer.
+   * @protected
+   */
+
+
+  ImageLayer.prototype.createRenderer = function () {
+    return new _ImageLayer.default(this);
+  };
+
+  return ImageLayer;
+}(_BaseImage.default);
+
+var _default = ImageLayer;
+exports.default = _default;
+},{"./BaseImage.js":"node_modules/ol/layer/BaseImage.js","../renderer/canvas/ImageLayer.js":"node_modules/ol/renderer/canvas/ImageLayer.js"}],"node_modules/ol/tilecoord.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -48731,34 +49151,7 @@ function jsonp(url, callback, opt_errback, opt_callbackParam) {
 
   document.getElementsByTagName('head')[0].appendChild(script);
 }
-},{"./util.js":"node_modules/ol/util.js"}],"node_modules/ol/reproj/common.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.ENABLE_RASTER_REPROJECTION = exports.ERROR_THRESHOLD = void 0;
-
-/**
- * @module ol/reproj/common
- */
-
-/**
- * Default maximum allowed threshold  (in pixels) for reprojection
- * triangulation.
- * @type {number}
- */
-var ERROR_THRESHOLD = 0.5;
-/**
- * Enable automatic reprojection of raster sources. Default is `true`.
- * TODO: decide if we want to expose this as a build flag or remove it
- * @type {boolean}
- */
-
-exports.ERROR_THRESHOLD = ERROR_THRESHOLD;
-var ENABLE_RASTER_REPROJECTION = true;
-exports.ENABLE_RASTER_REPROJECTION = ENABLE_RASTER_REPROJECTION;
-},{}],"node_modules/ol/Tile.js":[function(require,module,exports) {
+},{"./util.js":"node_modules/ol/util.js"}],"node_modules/ol/Tile.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -57408,400 +57801,7 @@ var Processor = require('./processor');
 
 exports.Processor = Processor;
 
-},{"./processor":"node_modules/pixelworks/lib/processor.js"}],"node_modules/ol/layer/BaseImage.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
-
-var _Layer = _interopRequireDefault(require("./Layer.js"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var __extends = void 0 && (void 0).__extends || function () {
-  var extendStatics = function (d, b) {
-    extendStatics = Object.setPrototypeOf || {
-      __proto__: []
-    } instanceof Array && function (d, b) {
-      d.__proto__ = b;
-    } || function (d, b) {
-      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    };
-
-    return extendStatics(d, b);
-  };
-
-  return function (d, b) {
-    extendStatics(d, b);
-
-    function __() {
-      this.constructor = d;
-    }
-
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-}();
-/**
- * @module ol/layer/BaseImage
- */
-
-
-/**
- * @typedef {Object} Options
- * @property {string} [className='ol-layer'] A CSS class name to set to the layer element.
- * @property {number} [opacity=1] Opacity (0, 1).
- * @property {boolean} [visible=true] Visibility.
- * @property {import("../extent.js").Extent} [extent] The bounding extent for layer rendering.  The layer will not be
- * rendered outside of this extent.
- * @property {number} [zIndex] The z-index for layer rendering.  At rendering time, the layers
- * will be ordered, first by Z-index and then by position. When `undefined`, a `zIndex` of 0 is assumed
- * for layers that are added to the map's `layers` collection, or `Infinity` when the layer's `setMap()`
- * method was used.
- * @property {number} [minResolution] The minimum resolution (inclusive) at which this layer will be
- * visible.
- * @property {number} [maxResolution] The maximum resolution (exclusive) below which this layer will
- * be visible.
- * @property {import("../PluggableMap.js").default} [map] Sets the layer as overlay on a map. The map will not manage
- * this layer in its layers collection, and the layer will be rendered on top. This is useful for
- * temporary layers. The standard way to add a layer to a map and have it managed by the map is to
- * use {@link module:ol/Map#addLayer}.
- * @property {import("../source/Image.js").default} [source] Source for this layer.
- */
-
-/**
- * @classdesc
- * Server-rendered images that are available for arbitrary extents and
- * resolutions.
- * Note that any property set in the options is set as a {@link module:ol/Object~BaseObject}
- * property on the layer object; for example, setting `title: 'My Title'` in the
- * options means that `title` is observable, and has get/set accessors.
- *
- * @extends {Layer<import("../source/Image.js").default>}
- * @api
- */
-var BaseImageLayer =
-/** @class */
-function (_super) {
-  __extends(BaseImageLayer, _super);
-  /**
-   * @param {Options=} opt_options Layer options.
-   */
-
-
-  function BaseImageLayer(opt_options) {
-    var _this = this;
-
-    var options = opt_options ? opt_options : {};
-    _this = _super.call(this, options) || this;
-    return _this;
-  }
-
-  return BaseImageLayer;
-}(_Layer.default);
-
-var _default = BaseImageLayer;
-exports.default = _default;
-},{"./Layer.js":"node_modules/ol/layer/Layer.js"}],"node_modules/ol/renderer/canvas/ImageLayer.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
-
-var _common = require("../../reproj/common.js");
-
-var _ViewHint = _interopRequireDefault(require("../../ViewHint.js"));
-
-var _extent = require("../../extent.js");
-
-var _proj = require("../../proj.js");
-
-var _Layer = _interopRequireDefault(require("./Layer.js"));
-
-var _transform = require("../../transform.js");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var __extends = void 0 && (void 0).__extends || function () {
-  var extendStatics = function (d, b) {
-    extendStatics = Object.setPrototypeOf || {
-      __proto__: []
-    } instanceof Array && function (d, b) {
-      d.__proto__ = b;
-    } || function (d, b) {
-      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    };
-
-    return extendStatics(d, b);
-  };
-
-  return function (d, b) {
-    extendStatics(d, b);
-
-    function __() {
-      this.constructor = d;
-    }
-
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-}();
-/**
- * @module ol/renderer/canvas/ImageLayer
- */
-
-
-/**
- * @classdesc
- * Canvas renderer for image layers.
- * @api
- */
-var CanvasImageLayerRenderer =
-/** @class */
-function (_super) {
-  __extends(CanvasImageLayerRenderer, _super);
-  /**
-   * @param {import("../../layer/Image.js").default} imageLayer Image layer.
-   */
-
-
-  function CanvasImageLayerRenderer(imageLayer) {
-    var _this = _super.call(this, imageLayer) || this;
-    /**
-     * @protected
-     * @type {?import("../../ImageBase.js").default}
-     */
-
-
-    _this.image_ = null;
-    return _this;
-  }
-  /**
-   * @inheritDoc
-   */
-
-
-  CanvasImageLayerRenderer.prototype.getImage = function () {
-    return !this.image_ ? null : this.image_.getImage();
-  };
-  /**
-   * @inheritDoc
-   */
-
-
-  CanvasImageLayerRenderer.prototype.prepareFrame = function (frameState) {
-    var layerState = frameState.layerStatesArray[frameState.layerIndex];
-    var pixelRatio = frameState.pixelRatio;
-    var viewState = frameState.viewState;
-    var viewResolution = viewState.resolution;
-    var imageSource = this.getLayer().getSource();
-    var hints = frameState.viewHints;
-    var renderedExtent = frameState.extent;
-
-    if (layerState.extent !== undefined) {
-      renderedExtent = (0, _extent.getIntersection)(renderedExtent, (0, _proj.fromUserExtent)(layerState.extent, viewState.projection));
-    }
-
-    if (!hints[_ViewHint.default.ANIMATING] && !hints[_ViewHint.default.INTERACTING] && !(0, _extent.isEmpty)(renderedExtent)) {
-      var projection = viewState.projection;
-
-      if (!_common.ENABLE_RASTER_REPROJECTION) {
-        var sourceProjection = imageSource.getProjection();
-
-        if (sourceProjection) {
-          projection = sourceProjection;
-        }
-      }
-
-      var image = imageSource.getImage(renderedExtent, viewResolution, pixelRatio, projection);
-
-      if (image && this.loadImage(image)) {
-        this.image_ = image;
-      }
-    }
-
-    return !!this.image_;
-  };
-  /**
-   * @inheritDoc
-   */
-
-
-  CanvasImageLayerRenderer.prototype.renderFrame = function (frameState, target) {
-    var image = this.image_;
-    var imageExtent = image.getExtent();
-    var imageResolution = image.getResolution();
-    var imagePixelRatio = image.getPixelRatio();
-    var layerState = frameState.layerStatesArray[frameState.layerIndex];
-    var pixelRatio = frameState.pixelRatio;
-    var viewState = frameState.viewState;
-    var viewCenter = viewState.center;
-    var viewResolution = viewState.resolution;
-    var size = frameState.size;
-    var scale = pixelRatio * imageResolution / (viewResolution * imagePixelRatio);
-    var width = Math.round(size[0] * pixelRatio);
-    var height = Math.round(size[1] * pixelRatio);
-    var rotation = viewState.rotation;
-
-    if (rotation) {
-      var size_1 = Math.round(Math.sqrt(width * width + height * height));
-      width = size_1;
-      height = size_1;
-    } // set forward and inverse pixel transforms
-
-
-    (0, _transform.compose)(this.pixelTransform, frameState.size[0] / 2, frameState.size[1] / 2, 1 / pixelRatio, 1 / pixelRatio, rotation, -width / 2, -height / 2);
-    (0, _transform.makeInverse)(this.inversePixelTransform, this.pixelTransform);
-    var canvasTransform = this.createTransformString(this.pixelTransform);
-    this.useContainer(target, canvasTransform, layerState.opacity);
-    var context = this.context;
-    var canvas = context.canvas;
-
-    if (canvas.width != width || canvas.height != height) {
-      canvas.width = width;
-      canvas.height = height;
-    } else if (!this.containerReused) {
-      context.clearRect(0, 0, width, height);
-    } // clipped rendering if layer extent is set
-
-
-    var clipped = false;
-
-    if (layerState.extent) {
-      var layerExtent = (0, _proj.fromUserExtent)(layerState.extent, viewState.projection);
-      clipped = !(0, _extent.containsExtent)(layerExtent, frameState.extent) && (0, _extent.intersects)(layerExtent, frameState.extent);
-
-      if (clipped) {
-        this.clipUnrotated(context, frameState, layerExtent);
-      }
-    }
-
-    var img = image.getImage();
-    var transform = (0, _transform.compose)(this.tempTransform_, width / 2, height / 2, scale, scale, 0, imagePixelRatio * (imageExtent[0] - viewCenter[0]) / imageResolution, imagePixelRatio * (viewCenter[1] - imageExtent[3]) / imageResolution);
-    this.renderedResolution = imageResolution * pixelRatio / imagePixelRatio;
-    var dx = transform[4];
-    var dy = transform[5];
-    var dw = img.width * transform[0];
-    var dh = img.height * transform[3];
-    this.preRender(context, frameState);
-
-    if (dw >= 0.5 && dh >= 0.5) {
-      var opacity = layerState.opacity;
-      var previousAlpha = void 0;
-
-      if (opacity !== 1) {
-        previousAlpha = this.context.globalAlpha;
-        this.context.globalAlpha = opacity;
-      }
-
-      this.context.drawImage(img, 0, 0, +img.width, +img.height, Math.round(dx), Math.round(dy), Math.round(dw), Math.round(dh));
-
-      if (opacity !== 1) {
-        this.context.globalAlpha = previousAlpha;
-      }
-    }
-
-    this.postRender(context, frameState);
-
-    if (clipped) {
-      context.restore();
-    }
-
-    if (canvasTransform !== canvas.style.transform) {
-      canvas.style.transform = canvasTransform;
-    }
-
-    return this.container;
-  };
-
-  return CanvasImageLayerRenderer;
-}(_Layer.default);
-
-var _default = CanvasImageLayerRenderer;
-exports.default = _default;
-},{"../../reproj/common.js":"node_modules/ol/reproj/common.js","../../ViewHint.js":"node_modules/ol/ViewHint.js","../../extent.js":"node_modules/ol/extent.js","../../proj.js":"node_modules/ol/proj.js","./Layer.js":"node_modules/ol/renderer/canvas/Layer.js","../../transform.js":"node_modules/ol/transform.js"}],"node_modules/ol/layer/Image.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
-
-var _BaseImage = _interopRequireDefault(require("./BaseImage.js"));
-
-var _ImageLayer = _interopRequireDefault(require("../renderer/canvas/ImageLayer.js"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var __extends = void 0 && (void 0).__extends || function () {
-  var extendStatics = function (d, b) {
-    extendStatics = Object.setPrototypeOf || {
-      __proto__: []
-    } instanceof Array && function (d, b) {
-      d.__proto__ = b;
-    } || function (d, b) {
-      for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    };
-
-    return extendStatics(d, b);
-  };
-
-  return function (d, b) {
-    extendStatics(d, b);
-
-    function __() {
-      this.constructor = d;
-    }
-
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-}();
-/**
- * @module ol/layer/Image
- */
-
-
-/**
- * @classdesc
- * Server-rendered images that are available for arbitrary extents and
- * resolutions.
- * Note that any property set in the options is set as a {@link module:ol/Object~BaseObject}
- * property on the layer object; for example, setting `title: 'My Title'` in the
- * options means that `title` is observable, and has get/set accessors.
- *
- * @api
- */
-var ImageLayer =
-/** @class */
-function (_super) {
-  __extends(ImageLayer, _super);
-  /**
-   * @param {import("./BaseImage.js").Options=} opt_options Layer options.
-   */
-
-
-  function ImageLayer(opt_options) {
-    return _super.call(this, opt_options) || this;
-  }
-  /**
-   * Create a renderer for this layer.
-   * @return {import("../renderer/Layer.js").default} A layer renderer.
-   * @protected
-   */
-
-
-  ImageLayer.prototype.createRenderer = function () {
-    return new _ImageLayer.default(this);
-  };
-
-  return ImageLayer;
-}(_BaseImage.default);
-
-var _default = ImageLayer;
-exports.default = _default;
-},{"./BaseImage.js":"node_modules/ol/layer/BaseImage.js","../renderer/canvas/ImageLayer.js":"node_modules/ol/renderer/canvas/ImageLayer.js"}],"node_modules/ol/source/Raster.js":[function(require,module,exports) {
+},{"./processor":"node_modules/pixelworks/lib/processor.js"}],"node_modules/ol/source/Raster.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -62454,6 +62454,8 @@ var _View = _interopRequireDefault(require("ol/View"));
 
 var _Tile = _interopRequireDefault(require("ol/layer/Tile"));
 
+var _Image = _interopRequireDefault(require("ol/layer/Image"));
+
 var _source = require("ol/source");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -62462,7 +62464,8 @@ var mapcolor = new _Map.default();
 var xyz = new _source.XYZ({
   url: 'https://mbenzekri.github.io/frcommunes/fr/communes/{z}/{x}/{y}.png',
   maxZoom: 12,
-  minZoom: 5
+  minZoom: 5,
+  crossOrigin: 'anonymous'
 });
 var tilelayer = new _Tile.default({
   source: xyz
@@ -62470,18 +62473,17 @@ var tilelayer = new _Tile.default({
 var rastersource = new _source.Raster({
   sources: [xyz],
   operation: function operation(pixels, data) {
-    pixels[0] = pixels[0];
-    pixels[1] = pixels[1];
-    pixels[2] = pixels[2];
+    var pixel = pixels[0];
+    return [pixel[0], pixel[1], pixel[2], pixel[3]];
   }
 });
-var imagelayer = new _Tile.default({
+var imagelayer = new _Image.default({
   source: rastersource
 });
 var map = new _Map.default({
   layers: [new _Tile.default({
     source: new _source.OSM()
-  }), tilelayer, // when replaced by  tilelayer line 15 it's ok when replaced by imagelayer from line 28 it fails  
+  }), imagelayer, // when replaced by  tilelayer line 15 it's ok when replaced by imagelayer from line 28 it fails  
   new _Tile.default({
     source: new _source.TileDebug()
   })],
@@ -62491,7 +62493,7 @@ var map = new _Map.default({
     zoom: 5
   })
 });
-},{"ol/ol.css":"node_modules/ol/ol.css","ol/Map":"node_modules/ol/Map.js","ol/View":"node_modules/ol/View.js","ol/layer/Tile":"node_modules/ol/layer/Tile.js","ol/source":"node_modules/ol/source.js"}],"node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"ol/ol.css":"node_modules/ol/ol.css","ol/Map":"node_modules/ol/Map.js","ol/View":"node_modules/ol/View.js","ol/layer/Tile":"node_modules/ol/layer/Tile.js","ol/layer/Image":"node_modules/ol/layer/Image.js","ol/source":"node_modules/ol/source.js"}],"node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;

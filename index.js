@@ -2,14 +2,15 @@ import 'ol/ol.css';
 import Map from 'ol/Map';
 import View from 'ol/View';
 import TileLayer from 'ol/layer/Tile';
-import ImageLayer from 'ol/layer/Tile';
+import ImageLayer from 'ol/layer/Image';
 import { OSM, TileDebug, XYZ, Raster } from 'ol/source';
 
 const mapcolor = new Map()
 const xyz = new XYZ({
     url: 'https://mbenzekri.github.io/frcommunes/fr/communes/{z}/{x}/{y}.png',
     maxZoom: 12,
-    minZoom: 5
+    minZoom: 5,
+    crossOrigin: 'anonymous'
 })
 
 const tilelayer = new TileLayer({
@@ -19,9 +20,8 @@ const tilelayer = new TileLayer({
 const rastersource= new Raster({
     sources: [ xyz ],
     operation: function (pixels, data) { 
-        pixels[0] = pixels[0] 
-        pixels[1] = pixels[1] 
-        pixels[2] = pixels[2] 
+        const pixel = pixels[0]
+        return [ pixel[0] ,  pixel[1] , pixel[2], pixel[3] ] 
     }
 })
 
@@ -34,7 +34,7 @@ var map = new Map({
         new TileLayer({
             source: new OSM()
         }),
-        tilelayer, // when replaced by  tilelayer line 15 it's ok when replaced by imagelayer from line 28 it fails  
+        imagelayer, // when replaced by  tilelayer line 15 it's ok when replaced by imagelayer from line 28 it fails  
         new TileLayer({
             source: new TileDebug()
         }),
