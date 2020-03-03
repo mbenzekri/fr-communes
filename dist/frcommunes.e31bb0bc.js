@@ -62460,7 +62460,7 @@ var _source = require("ol/source");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var mapcolor = new _Map.default();
+var mapcolor = new window.Map();
 var xyz = new _source.XYZ({
   url: 'https://mbenzekri.github.io/frcommunes/fr/communes/{z}/{x}/{y}.png',
   maxZoom: 12,
@@ -62474,8 +62474,21 @@ var rastersource = new _source.Raster({
   sources: [xyz],
   operation: function operation(pixels, data) {
     var pixel = pixels[0];
-    return [pixel[0], pixel[1], pixel[2], pixel[3]];
-  }
+    var hcolor = (pixel[0] * 256 + pixel[1]) * 256 + pixel[2];
+    var key = parseInt(hcolor.toString(16), 10).toString().padStart(6, '0');
+    var color = mapcolor.get(key);
+
+    if (!color) {
+      var r = Math.ceil(Math.random() * 256);
+      var g = Math.ceil(Math.random() * 256);
+      var b = Math.ceil(Math.random() * 256);
+      color = [r, g, b, pixel[3]];
+      mapcolor.set(key, color);
+    }
+
+    return color;
+  },
+  threads: 0
 });
 var imagelayer = new _Image.default({
   source: rastersource
