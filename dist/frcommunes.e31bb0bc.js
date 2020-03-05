@@ -62448,6 +62448,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 require("ol/ol.css");
 
+var _util = require("ol/util.js");
+
 var _Map = _interopRequireDefault(require("ol/Map"));
 
 var _View = _interopRequireDefault(require("ol/View"));
@@ -62458,6 +62460,8 @@ var _Image = _interopRequireDefault(require("ol/layer/Image"));
 
 var _source = require("ol/source");
 
+var _TileLayer = _interopRequireDefault(require("ol/renderer/canvas/TileLayer.js"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var mapcolor = new window.Map();
@@ -62465,15 +62469,16 @@ var xyz = new _source.XYZ({
   url: 'https://mbenzekri.github.io/frcommunes/fr/communes/{z}/{x}/{y}.png',
   maxZoom: 12,
   minZoom: 5,
-  crossOrigin: 'anonymous'
-});
-var tilelayer = new _Tile.default({
-  source: xyz
+  crossOrigin: 'anonymous',
+  tileSize: 256,
+  transition: 0,
+  opaque: false
 });
 var rastersource = new _source.Raster({
   sources: [xyz],
   operation: function operation(pixels, data) {
     var pixel = pixels[0];
+    if (pixel[3] === 0) return pixel;
     var hcolor = (pixel[0] * 256 + pixel[1]) * 256 + pixel[2];
     var key = parseInt(hcolor.toString(16), 10).toString().padStart(6, '0');
     var color = mapcolor.get(key);
@@ -62491,7 +62496,8 @@ var rastersource = new _source.Raster({
   threads: 0
 });
 var imagelayer = new _Image.default({
-  source: rastersource
+  source: rastersource,
+  transition: 0
 });
 var map = new _Map.default({
   layers: [new _Tile.default({
@@ -62503,10 +62509,47 @@ var map = new _Map.default({
   target: 'map',
   view: new _View.default({
     center: [260000, 6250000],
-    zoom: 5
+    zoom: 5,
+    zoomFactor: 2
   })
 });
-},{"ol/ol.css":"node_modules/ol/ol.css","ol/Map":"node_modules/ol/Map.js","ol/View":"node_modules/ol/View.js","ol/layer/Tile":"node_modules/ol/layer/Tile.js","ol/layer/Image":"node_modules/ol/layer/Image.js","ol/source":"node_modules/ol/source.js"}],"node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+imagelayer.on('prerender', function (evt) {
+  console.log('prerender');
+});
+
+_TileLayer.default.prototype.drawTileImage = function (tile, frameState, x, y, w, h, gutter, transition, opacity) {
+  var image = this.getTileImage(tile);
+
+  if (!image) {
+    return;
+  }
+
+  var uid = (0, _util.getUid)(this);
+  var tileAlpha = transition ? tile.getAlpha(uid, frameState.time) : 1;
+  var alpha = opacity * tileAlpha;
+  var alphaChanged = alpha !== this.context.globalAlpha;
+
+  if (alphaChanged) {
+    this.context.save();
+    this.context.globalAlpha = alpha;
+  } // --------------------------------------------- MY CHANGE
+
+
+  this.context.imageSmoothingEnabled = false; // --------------------------------------------- MY CHANGE
+
+  this.context.drawImage(image, gutter, gutter, image.width - 2 * gutter, image.height - 2 * gutter, x, y, w, h);
+
+  if (alphaChanged) {
+    this.context.restore();
+  }
+
+  if (tileAlpha !== 1) {
+    frameState.animate = true;
+  } else if (transition) {
+    tile.endTransition(uid);
+  }
+};
+},{"ol/ol.css":"node_modules/ol/ol.css","ol/util.js":"node_modules/ol/util.js","ol/Map":"node_modules/ol/Map.js","ol/View":"node_modules/ol/View.js","ol/layer/Tile":"node_modules/ol/layer/Tile.js","ol/layer/Image":"node_modules/ol/layer/Image.js","ol/source":"node_modules/ol/source.js","ol/renderer/canvas/TileLayer.js":"node_modules/ol/renderer/canvas/TileLayer.js"}],"node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -62533,7 +62576,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "56227" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "55790" + '/');
 
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
