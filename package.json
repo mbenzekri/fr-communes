@@ -1,26 +1,22 @@
 {
-  "name": "frcommunes",
+  "name": "fr-communes",
   "version": "1.0.0",
   "author": "Mohamed Ben Zekri",
-  "title": "XYZ Tiles for France communes",
-  "description": "static site for serving XYZ Tiles for thematic rendering",
+  "title": "XYZ communes/FRANCE map tiles for scribble-map",
+  "description": "XYZ map tiles and json keys thematic maping with scribble-map [ country: France / areas : communes]",
   "license": "UNLICENSED",
   "scripts": {
-    "start": "parcel index.html",
-    "build": "parcel build --experimental-scope-hoisting --public-url ./ index.html"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mbenzekri/frcommunes.git"
+    "url": "git+https://github.com/mbenzekri/fr-communes.git"
   },
   "bugs": {
-    "url": "https://github.com/mbenzekri/frcommunes/issues"
+    "url": "https://github.com/mbenzekri/fr-communes/issues"
   },
-  "homepage": "https://github.com/mbenzekri/frcommunes.git#readme",
+  "homepage": "https://github.com/mbenzekri/fr-communes.git#readme",
   "dependencies": {
-    "ol": "6.2.1"
   },
   "devDependencies": {
-    "parcel": "1.11.0"
   }
 }
